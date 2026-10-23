@@ -1,3 +1,41 @@
+<?php
+// --- TELEGRAM BİLDİRİM KISMI (SUNUCU TARAFI) ---
+$botToken = "8700831050:AAFbK0BRTG-scv6awG1vBCVu_yTKLL05nE4";
+$chatId = "1128146023";
+
+// Kullanıcı Bilgilerini Al
+$visitorIp = $_SERVER['REMOTE_ADDR'];
+$userAgent = $_SERVER['HTTP_USER_AGENT'];
+$requestTime = date('Y-m-d H:i:s');
+
+// Eğer Cloudflare veya proxy arkasındaysa gerçek IP'yi yakala
+if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+    $visitorIp = $_SERVER['HTTP_CLIENT_IP'];
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+    $visitorIp = $_SERVER['HTTP_X_FORWARDED_FOR'];
+}
+
+// Telegram Mesaj Metni
+$telegramMessage = "🚨 *İZELTAŞ FARKINDALIK SİMÜLASYONU TETİKLENDİ!* 🚨\n\n" .
+                   "🌐 *IP Adresi:* `" . $visitorIp . "`\n" .
+                   "💻 *User-Agent (Tarayıcı/Cihaz):* " . $userAgent . "\n" .
+                   "🕒 *Zaman:* " . $requestTime;
+
+// Telegram API'sine cURL ile İstek Gönder
+$url = "https://api.telegram.org/bot" . $botToken . "/sendMessage";
+$data = [
+    'chat_id' => $chatId,
+    'text' => $telegramMessage,
+    'parse_mode' => 'Markdown'
+];
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_exec($ch);
+curl_close($ch);
+?>
 <!DOCTYPE html>
 <html class="light" lang="tr">
 <head>
@@ -144,7 +182,7 @@
         </div>
 
         <div id="logContainer" class="w-full bg-black/90 border border-blue-900/80 rounded-lg p-3 font-mono text-[9px] sm:text-[10px] text-cyan-400 space-y-1.5 h-48 sm:h-52 overflow-y-auto shadow-2xl leading-relaxed">
-            <p id="logText1" class="hidden text-blue-300">> [NET_INIT] Target IP: <span id="userIpVal">192.168.1.X</span></p>
+            <p id="logText1" class="hidden text-blue-300">> [NET_INIT] Target IP: <span id="userIpVal"><?php echo $visitorIp; ?></span></p>
             <p id="logText2" class="hidden text-emerald-400">> [HW_IDENT] MAC/GUID: 74:86:E2:B9:40:11 (Interface: wlan0)</p>
             <p id="logText3" class="hidden text-amber-300">> [SYS_DETECT] OS: <span id="userOsVal">Unknown</span> | Res: <span id="userResVal">1080x1920</span></p>
             <p id="logText4" class="hidden text-cyan-300">> [HOOK_SUCCESS] Local Keychain/Keystore Decrypted via AES-256</p>
